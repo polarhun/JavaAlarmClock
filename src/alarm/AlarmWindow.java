@@ -12,6 +12,7 @@ import javax.swing.SwingConstants;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.Timer;
 
 public class AlarmWindow {
 
@@ -19,9 +20,10 @@ public class AlarmWindow {
 	private JTextField txtMinute;
 	private JTextField txtHour;
 	private JLabel lblActualCurrent;
-	static private Alarm alarm;
-	static private boolean flag;
-	javax.swing.Timer inputUpdate;
+	private static Alarm alarm;
+	private static boolean flag;
+	private Timer inputUpdate;
+	private SoundManager beepManager;
 
 	/**
 	 * Launch the application.
@@ -45,6 +47,7 @@ public class AlarmWindow {
 	public AlarmWindow() {
 		alarm = null;
 		flag = false;
+		beepManager = SoundManager.getInstance();
 		initialize();
 
 		// * inputUpdate checks every second if alarm has been set, if it has it will do
@@ -54,7 +57,7 @@ public class AlarmWindow {
 			public void actionPerformed(ActionEvent e) {
 				if (flag) {
 					if(!alarm.Before()) {
-						System.out.println("Alarm!");
+						beepManager.playBeep("Beep");
 						flag = false;
 					}
 				}
@@ -123,6 +126,14 @@ public class AlarmWindow {
 			}
 		});
 		panelConfirm.add(btnSetAlarm);
+		
+		JButton btnStopAlarm = new JButton("Stop Alarm");
+		btnStopAlarm.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				beepManager.stopBeep();
+			}
+		});
+		panelConfirm.add(btnStopAlarm);
 	}
 
 	private void setAlarm() {
