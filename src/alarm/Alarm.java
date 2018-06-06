@@ -20,8 +20,22 @@ public class Alarm{
 		return out;
 	}
 	
+	public boolean After() {
+		boolean out;
+		if (LocalTime.now().isAfter(this.alarmTime)) {
+			out = true;
+		} else {
+			out = false;
+		}
+		return out;
+	}
+	
 	public String toString() {
-		return(""+this.alarmTime.getHour()+":"+this.alarmTime.getMinute());
+		int minute = this.alarmTime.getMinute();
+		int hour = this.alarmTime.getHour();
+		String minutes = (minute < 10) ? "0"+minute:""+minute;
+		String hours = (hour < 10) ? "0"+hour:""+hour; 
+		return(hours + ":" + minutes);
 	}
 	
 }

@@ -38,6 +38,8 @@ public class SoundManager {
 	}
 	
 	public void stopBeep() {
-		audioClip.close();
+		if(audioClip != null) {
+			audioClip.close();
+		}
 	}
 }
