@@ -14,6 +14,7 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.Timer;
+import java.awt.FlowLayout;
 
 public class AlarmWindow {
 
@@ -24,6 +25,7 @@ public class AlarmWindow {
 	private JLabel lblHour;
 	private JLabel lblMinute;
 	private JLabel lblHelp;
+	private JLabel lblActualTimeLeft;
 	private static Alarm alarm;
 	private static boolean flag;
 	private Timer inputUpdate;
@@ -60,7 +62,9 @@ public class AlarmWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (flag) {
-					if (!alarm.Before()) {
+					lblActualTimeLeft.setText(alarm.timeLeft());
+					if (!alarm.beforeAlarm()) {
+						lblActualTimeLeft.setText("00:00");
 						beepManager.playBeep("Beep");
 						flag = false;
 					}
@@ -102,59 +106,82 @@ public class AlarmWindow {
 		frame.getContentPane().add(panelSelectors);
 		panelSelectors.setLayout(new GridLayout(2, 2, 100, 0));
 
+		JPanel panelTxt = new JPanel();
+		FlowLayout flowLayout_1 = (FlowLayout) panelTxt.getLayout();
+		flowLayout_1.setVgap(20);
+		flowLayout_1.setHgap(100);
+		panelSelectors.add(panelTxt);
+
 		txtHour = new JTextField();
-		panelSelectors.add(txtHour);
+		panelTxt.add(txtHour);
 		txtHour.setColumns(10);
 
 		txtMinute = new JTextField();
-		panelSelectors.add(txtMinute);
+		panelTxt.add(txtMinute);
 		txtMinute.setColumns(10);
 
+		JPanel panelSelectorlbl = new JPanel();
+		FlowLayout flowLayout = (FlowLayout) panelSelectorlbl.getLayout();
+		flowLayout.setVgap(0);
+		flowLayout.setHgap(40);
+		panelSelectors.add(panelSelectorlbl);
+
 		lblHour = new JLabel("Hour");
+		panelSelectorlbl.add(lblHour);
 		lblHour.setHorizontalAlignment(SwingConstants.CENTER);
 		lblHour.setLabelFor(txtHour);
-		panelSelectors.add(lblHour);
+
+		JPanel panelTimeLeft = new JPanel();
+		panelSelectorlbl.add(panelTimeLeft);
+
+		JLabel lblTimeLeft = new JLabel("Time Left:");
+		panelTimeLeft.add(lblTimeLeft);
+
+		lblActualTimeLeft = new JLabel("--");
+		panelTimeLeft.add(lblActualTimeLeft);
 
 		lblMinute = new JLabel("Minute");
+		panelSelectorlbl.add(lblMinute);
 		lblMinute.setHorizontalAlignment(SwingConstants.CENTER);
 		lblMinute.setLabelFor(txtMinute);
-		panelSelectors.add(lblMinute);
 
 		JPanel panelControl = new JPanel();
 		frame.getContentPane().add(panelControl);
 		panelControl.setLayout(new GridLayout(2, 1, 0, 0));
-		
+
 		JPanel panelHelp = new JPanel();
 		panelHelp.setForeground(Color.BLACK);
 		panelControl.add(panelHelp);
-		
+
 		lblHelp = new JLabel("Please Input Hour and Minute");
 		lblHelp.setForeground(Color.BLACK);
 		panelHelp.add(lblHelp);
-		
+
 		JPanel panelButtons = new JPanel();
 		panelControl.add(panelButtons);
-		
-				JButton btnSetAlarm = new JButton("Set Alarm");
-				panelButtons.add(btnSetAlarm);
-				
-						JButton btnStopAlarm = new JButton("Stop Alarm");
-						btnStopAlarm.setEnabled(false);
-						panelButtons.add(btnStopAlarm);
-						btnStopAlarm.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent arg0) {
-								beepManager.stopBeep();
-								flag = false;
-								lblActualCurrent.setText("--");
-								btnStopAlarm.setEnabled(false);
-							}
-						});
-						btnSetAlarm.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent arg0) {
-								setAlarm();
-								btnStopAlarm.setEnabled(true);
-							}
-						});
+
+		JButton btnSetAlarm = new JButton("Set Alarm");
+		panelButtons.add(btnSetAlarm);
+
+		JButton btnStopAlarm = new JButton("Stop Alarm");
+		btnStopAlarm.setEnabled(false);
+		panelButtons.add(btnStopAlarm);
+		btnStopAlarm.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				beepManager.stopBeep();
+				flag = false;
+				lblActualCurrent.setText("--");
+				lblActualTimeLeft.setText("--");
+				btnStopAlarm.setEnabled(false);
+			}
+		});
+		btnSetAlarm.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				setAlarm();
+				lblActualTimeLeft.setText(alarm.timeLeft());
+				btnStopAlarm.setEnabled(true);
+			}
+		});
 	}
 
 	private void setAlarm() {
@@ -168,12 +195,7 @@ public class AlarmWindow {
 		} catch (NumberFormatException e) {
 			lblHelp.setText("Not integer input");
 		}
-		
-		if(valid && AlarmWindow.alarm.After()) {
-			valid = false;
-			lblHelp.setText("Input time is before current time");
-		}
-		
+
 		if (valid) {
 			validateGUI();
 			lblActualCurrent.setText(AlarmWindow.alarm.toString());
@@ -182,7 +204,7 @@ public class AlarmWindow {
 			invalidateGUI();
 		}
 	}
-	
+
 	private void invalidateGUI() {
 		lblHour.setForeground(Color.RED);
 		lblMinute.setForeground(Color.RED);
