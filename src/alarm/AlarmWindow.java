@@ -26,6 +26,7 @@ public class AlarmWindow {
 	private JLabel lblMinute;
 	private JLabel lblHelp;
 	private JLabel lblActualTimeLeft;
+	private JButton btnSnooze;
 	private static Alarm alarm;
 	private static boolean flag;
 	private Timer inputUpdate;
@@ -66,6 +67,7 @@ public class AlarmWindow {
 					if (!alarm.beforeAlarm()) {
 						lblActualTimeLeft.setText("00:00");
 						beepManager.playBeep("Beep");
+						btnSnooze.setEnabled(true);
 						flag = false;
 					}
 				}
@@ -166,6 +168,18 @@ public class AlarmWindow {
 		JButton btnStopAlarm = new JButton("Stop Alarm");
 		btnStopAlarm.setEnabled(false);
 		panelButtons.add(btnStopAlarm);
+
+		btnSnooze = new JButton("Snooze");
+		btnSnooze.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				beepManager.stopBeep();
+				AlarmWindow.alarm.snooze(5);
+				lblActualCurrent.setText(AlarmWindow.alarm.toString());
+				flag = true;
+			}
+		});
+		btnSnooze.setEnabled(false);
+		panelButtons.add(btnSnooze);
 		btnStopAlarm.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				beepManager.stopBeep();
@@ -173,6 +187,7 @@ public class AlarmWindow {
 				lblActualCurrent.setText("--");
 				lblActualTimeLeft.setText("--");
 				btnStopAlarm.setEnabled(false);
+				btnSnooze.setEnabled(false);
 			}
 		});
 		btnSetAlarm.addActionListener(new ActionListener() {

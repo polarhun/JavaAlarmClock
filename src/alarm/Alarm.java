@@ -41,6 +41,10 @@ public class Alarm {
 		return stringify(alarmDateTime);
 	}
 
+	public void snooze(int minutes) {
+		this.alarmDateTime = this.alarmDateTime.plusMinutes(minutes);
+	}
+
 	private String stringify(LocalTime time) {
 		int minute = time.getMinute();
 		int hour = time.getHour();
