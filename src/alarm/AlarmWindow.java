@@ -15,6 +15,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.Timer;
 import java.awt.FlowLayout;
+import javax.swing.JSplitPane;
+import javax.swing.JList;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import javax.swing.ListSelectionModel;
+import javax.swing.AbstractListModel;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.LineBorder;
 
 public class AlarmWindow {
 
@@ -27,8 +36,9 @@ public class AlarmWindow {
 	private JLabel lblHelp;
 	private JLabel lblActualTimeLeft;
 	private JButton btnSnooze;
-	private static Alarm alarm;
-	private static boolean flag;
+	private JList listAlarms;
+	private static AlarmList alarms;
+	private static boolean silent;
 	private Timer inputUpdate;
 	private SoundManager beepManager;
 
@@ -52,8 +62,8 @@ public class AlarmWindow {
 	 * Create the application.
 	 */
 	public AlarmWindow() {
-		alarm = null;
-		flag = false;
+		alarms = new AlarmList();
+		silent = true;
 		beepManager = SoundManager.getInstance();
 		initialize();
 
@@ -62,13 +72,17 @@ public class AlarmWindow {
 		inputUpdate = new javax.swing.Timer(1000, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (flag) {
+				listAlarms.updateUI();
+				if (!alarms.isEmpty()) {
+					Alarm alarm = alarms.getFirst();
 					lblActualTimeLeft.setText(alarm.timeLeft());
-					if (!alarm.beforeAlarm()) {
+					if (!alarm.afterNow()) {
 						lblActualTimeLeft.setText("00:00");
-						beepManager.playBeep("Beep");
+						if(silent) {
+							beepManager.playBeep("Beep");
+							silent = false;
+						}
 						btnSnooze.setEnabled(true);
-						flag = false;
 					}
 				}
 			}
@@ -82,12 +96,27 @@ public class AlarmWindow {
 
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 300);
+		frame.setResizable(false);
+		frame.setBounds(100, 100, 600, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(new GridLayout(3, 1, 0, 0));
+		GridBagLayout gridBagLayout = new GridBagLayout();
+		gridBagLayout.columnWidths = new int[] { 100, 125 };
+		gridBagLayout.rowHeights = new int[] { 275 };
+		gridBagLayout.columnWeights = new double[] { 1.0, 0.0 };
+		gridBagLayout.rowWeights = new double[] { 0.0 };
+		frame.getContentPane().setLayout(gridBagLayout);
+
+		JPanel panelAlarmControl = new JPanel();
+		GridBagConstraints gbc_panelAlarmControl = new GridBagConstraints();
+		gbc_panelAlarmControl.anchor = GridBagConstraints.WEST;
+		gbc_panelAlarmControl.fill = GridBagConstraints.VERTICAL;
+		gbc_panelAlarmControl.insets = new Insets(0, 0, 0, 5);
+		gbc_panelAlarmControl.gridx = 0;
+		gbc_panelAlarmControl.gridy = 0;
+		frame.getContentPane().add(panelAlarmControl, gbc_panelAlarmControl);
 
 		JPanel panelDetails = new JPanel();
-		frame.getContentPane().add(panelDetails);
+		panelAlarmControl.add(panelDetails);
 		panelDetails.setLayout(new GridLayout(2, 1, 0, 0));
 
 		JLabel lblWelcome = new JLabel("Welcome to Alarm");
@@ -105,7 +134,7 @@ public class AlarmWindow {
 		paneCurrent.add(lblActualCurrent);
 
 		JPanel panelSelectors = new JPanel();
-		frame.getContentPane().add(panelSelectors);
+		panelAlarmControl.add(panelSelectors);
 		panelSelectors.setLayout(new GridLayout(2, 2, 100, 0));
 
 		JPanel panelTxt = new JPanel();
@@ -148,7 +177,7 @@ public class AlarmWindow {
 		lblMinute.setLabelFor(txtMinute);
 
 		JPanel panelControl = new JPanel();
-		frame.getContentPane().add(panelControl);
+		panelAlarmControl.add(panelControl);
 		panelControl.setLayout(new GridLayout(2, 1, 0, 0));
 
 		JPanel panelHelp = new JPanel();
@@ -162,8 +191,8 @@ public class AlarmWindow {
 		JPanel panelButtons = new JPanel();
 		panelControl.add(panelButtons);
 
-		JButton btnSetAlarm = new JButton("Set Alarm");
-		panelButtons.add(btnSetAlarm);
+		JButton btnAddAlarm = new JButton("Add Alarm");
+		panelButtons.add(btnAddAlarm);
 
 		JButton btnStopAlarm = new JButton("Stop Alarm");
 		btnStopAlarm.setEnabled(false);
@@ -173,9 +202,12 @@ public class AlarmWindow {
 		btnSnooze.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				beepManager.stopBeep();
-				AlarmWindow.alarm.snooze(5);
-				lblActualCurrent.setText(AlarmWindow.alarm.toString());
-				flag = true;
+				silent = true;
+				Alarm snoozed = alarms.getFirst();
+				snoozed.snooze(5);
+				alarms.removeFirst();
+				alarms.insert(snoozed);
+				lblActualCurrent.setText(alarms.getFirst().toString());
 			}
 		});
 		btnSnooze.setEnabled(false);
@@ -183,39 +215,49 @@ public class AlarmWindow {
 		btnStopAlarm.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				beepManager.stopBeep();
-				flag = false;
+				silent = true;
 				lblActualCurrent.setText("--");
 				lblActualTimeLeft.setText("--");
-				btnStopAlarm.setEnabled(false);
 				btnSnooze.setEnabled(false);
+				alarms.removeFirst();
+				if (!alarms.isEmpty()) {
+					lblActualCurrent.setText(alarms.getFirst().toString());
+				}else {
+					btnStopAlarm.setEnabled(false);
+				}
 			}
 		});
-		btnSetAlarm.addActionListener(new ActionListener() {
+		btnAddAlarm.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				setAlarm();
-				lblActualTimeLeft.setText(alarm.timeLeft());
+				addAlarm();
+				lblActualTimeLeft.setText(alarms.getFirst().timeLeft());
 				btnStopAlarm.setEnabled(true);
 			}
 		});
+
+		listAlarms = new JList(alarms);
+		listAlarms.setBorder(new LineBorder(Color.PINK));
+		listAlarms.setForeground(Color.BLACK);
+		listAlarms.setBackground(Color.WHITE);
+		listAlarms.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		GridBagConstraints gbc_listAlarms = new GridBagConstraints();
+		gbc_listAlarms.fill = GridBagConstraints.BOTH;
+		gbc_listAlarms.gridx = 1;
+		gbc_listAlarms.gridy = 0;
+		frame.getContentPane().add(listAlarms, gbc_listAlarms);
 	}
 
-	private void setAlarm() {
-		boolean valid = false;
+	private void addAlarm() {
 		int hour = 0, minute = 0;
 		try {
 			hour = Integer.parseInt(txtHour.getText());
 			minute = Integer.parseInt(txtMinute.getText());
-			valid = true;
-			AlarmWindow.alarm = new Alarm(hour, minute);
+			Alarm newAlarm = new Alarm(hour, minute);
+			alarms.insert(newAlarm);
+			validateGUI();
+			lblActualCurrent.setText(alarms.getFirst().toString());
 		} catch (NumberFormatException e) {
 			lblHelp.setText("Not integer input");
-		}
-
-		if (valid) {
-			validateGUI();
-			lblActualCurrent.setText(AlarmWindow.alarm.toString());
-			flag = true;
-		} else {
 			invalidateGUI();
 		}
 	}

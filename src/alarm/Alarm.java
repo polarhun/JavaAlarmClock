@@ -7,9 +7,11 @@ import java.time.temporal.ChronoUnit;
 
 public class Alarm {
 	private LocalDateTime alarmDateTime;
+	private boolean snoozed;
 
 	public Alarm(int hour, int minutes) {
 		super();
+		this.snoozed = false;
 		LocalTime alarmTime = LocalTime.of(hour, minutes);
 		LocalDate alarmDate;
 		if (LocalTime.now().isAfter(alarmTime)) {
@@ -20,21 +22,36 @@ public class Alarm {
 		this.alarmDateTime = LocalDateTime.of(alarmDate, alarmTime);
 	}
 
-	public boolean beforeAlarm() {
-		boolean out;
-		if (LocalDateTime.now().isBefore(this.alarmDateTime)) {
-			out = true;
+	public LocalDateTime getAlarmTime() {
+		return alarmDateTime;
+	}
+
+	/* Check if alarm is after the current time */
+	public boolean afterNow() {
+		if (this.alarmDateTime.isAfter(LocalDateTime.now())) {
+			return true;
 		} else {
-			out = false;
+			return false;
 		}
-		return out;
+	}
+
+	/* Check if alarm is after the other alarm */
+	public boolean afterAlarm(Alarm other) {
+		LocalDateTime input = other.getAlarmTime();
+		if (this.alarmDateTime.isAfter(input)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	public String timeLeft() {
-		int minutes = (int) (LocalDateTime.now().until(alarmDateTime, ChronoUnit.MINUTES)) + 1;
-		int hours = (int) minutes / 60;
-		minutes = minutes % 60;
-		return stringify(LocalTime.of(hours, minutes));
+		int minute = (int) (LocalDateTime.now().until(alarmDateTime, ChronoUnit.MINUTES)) + 1;
+		int hour = (int) minute / 60;
+		minute = minute % 60;
+		String minutes = (minute < 10) ? "0" + minute : "" + minute;
+		String hours = (hour < 10) ? "0" + hour : "" + hour;
+		return (hours + ":" + minutes);
 	}
 
 	public String toString() {
@@ -42,16 +59,10 @@ public class Alarm {
 	}
 
 	public void snooze(int minutes) {
+		this.snoozed = true;
 		this.alarmDateTime = this.alarmDateTime.plusMinutes(minutes);
 	}
 
-	private String stringify(LocalTime time) {
-		int minute = time.getMinute();
-		int hour = time.getHour();
-		String minutes = (minute < 10) ? "0" + minute : "" + minute;
-		String hours = (hour < 10) ? "0" + hour : "" + hour;
-		return (hours + ":" + minutes);
-	}
 
 	private String stringify(LocalDateTime time) {
 		int minute = time.getMinute();
@@ -59,7 +70,8 @@ public class Alarm {
 		String minutes = (minute < 10) ? "0" + minute : "" + minute;
 		String hours = (hour < 10) ? "0" + hour : "" + hour;
 		String day = (LocalDate.now().getDayOfYear() == time.getDayOfYear()) ? "Today" : "Tomorrow";
-		return (day + " at " + hours + ":" + minutes);
+		String snooze = (snoozed) ? " (S)" : "";
+		return (day + " at " + hours + ":" + minutes + snooze);
 	}
 
 }
