@@ -24,6 +24,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.AbstractListModel;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.JScrollPane;
+import javax.swing.ListModel;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
 
 public class AlarmWindow {
 
@@ -36,6 +40,7 @@ public class AlarmWindow {
 	private JLabel lblHelp;
 	private JLabel lblActualTimeLeft;
 	private JButton btnSnooze;
+	private JButton buttonDelete;
 	private JList listAlarms;
 	private static AlarmList alarms;
 	private static boolean silent;
@@ -78,7 +83,7 @@ public class AlarmWindow {
 					lblActualTimeLeft.setText(alarm.timeLeft());
 					if (!alarm.afterNow()) {
 						lblActualTimeLeft.setText("00:00");
-						if(silent) {
+						if (silent) {
 							beepManager.playBeep("Beep");
 							silent = false;
 						}
@@ -97,20 +102,20 @@ public class AlarmWindow {
 	private void initialize() {
 		frame = new JFrame();
 		frame.setResizable(false);
-		frame.setBounds(100, 100, 600, 300);
+		frame.setBounds(100, 100, 600, 360);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] { 100, 125 };
+		gridBagLayout.columnWidths = new int[] {75, 25};
 		gridBagLayout.rowHeights = new int[] { 275 };
 		gridBagLayout.columnWeights = new double[] { 1.0, 0.0 };
-		gridBagLayout.rowWeights = new double[] { 0.0 };
+		gridBagLayout.rowWeights = new double[] { 1.0 };
 		frame.getContentPane().setLayout(gridBagLayout);
 
 		JPanel panelAlarmControl = new JPanel();
 		GridBagConstraints gbc_panelAlarmControl = new GridBagConstraints();
 		gbc_panelAlarmControl.anchor = GridBagConstraints.WEST;
 		gbc_panelAlarmControl.fill = GridBagConstraints.VERTICAL;
-		gbc_panelAlarmControl.insets = new Insets(0, 0, 0, 5);
+		gbc_panelAlarmControl.insets = new Insets(0, 0, 5, 5);
 		gbc_panelAlarmControl.gridx = 0;
 		gbc_panelAlarmControl.gridy = 0;
 		frame.getContentPane().add(panelAlarmControl, gbc_panelAlarmControl);
@@ -222,7 +227,7 @@ public class AlarmWindow {
 				alarms.removeFirst();
 				if (!alarms.isEmpty()) {
 					lblActualCurrent.setText(alarms.getFirst().toString());
-				}else {
+				} else {
 					btnStopAlarm.setEnabled(false);
 				}
 			}
@@ -235,16 +240,62 @@ public class AlarmWindow {
 			}
 		});
 
+		JPanel panelListControl = new JPanel();
+		GridBagConstraints gbc_panelListControl = new GridBagConstraints();
+		gbc_panelListControl.anchor = GridBagConstraints.EAST;
+		gbc_panelListControl.insets = new Insets(0, 0, 0, 5);
+		gbc_panelListControl.fill = GridBagConstraints.VERTICAL;
+		gbc_panelListControl.gridx = 1;
+		gbc_panelListControl.gridy = 0;
+		frame.getContentPane().add(panelListControl, gbc_panelListControl);
+		GridBagLayout gbl_panelListControl = new GridBagLayout();
+		gbl_panelListControl.columnWidths = new int[] { 100 };
+		gbl_panelListControl.rowHeights = new int[] {100, 25};
+		gbl_panelListControl.columnWeights = new double[] { 1.0 };
+		gbl_panelListControl.rowWeights = new double[] { 1.0, 0.0 };
+		panelListControl.setLayout(gbl_panelListControl);
+		
 		listAlarms = new JList(alarms);
-		listAlarms.setBorder(new LineBorder(Color.PINK));
-		listAlarms.setForeground(Color.BLACK);
-		listAlarms.setBackground(Color.WHITE);
+		listAlarms.addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent arg0) {
+				if(alarms.getSize()>1) {
+					buttonDelete.setEnabled(true);
+				}
+			}
+		});
 		listAlarms.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		listAlarms.setForeground(Color.BLACK);
+		listAlarms.setBorder(new LineBorder(Color.PINK));
+		listAlarms.setBackground(Color.WHITE);
 		GridBagConstraints gbc_listAlarms = new GridBagConstraints();
+		gbc_listAlarms.insets = new Insets(0, 0, 5, 0);
 		gbc_listAlarms.fill = GridBagConstraints.BOTH;
-		gbc_listAlarms.gridx = 1;
+		gbc_listAlarms.gridx = 0;
 		gbc_listAlarms.gridy = 0;
-		frame.getContentPane().add(listAlarms, gbc_listAlarms);
+		panelListControl.add(listAlarms, gbc_listAlarms);
+
+		JPanel panelListButtons = new JPanel();
+		FlowLayout flowLayout_2 = (FlowLayout) panelListButtons.getLayout();
+		flowLayout_2.setAlignment(FlowLayout.LEFT);
+		GridBagConstraints gbc_panelListButtons = new GridBagConstraints();
+		gbc_panelListButtons.insets = new Insets(0, 0, 5, 0);
+		gbc_panelListButtons.anchor = GridBagConstraints.SOUTH;
+		gbc_panelListButtons.fill = GridBagConstraints.HORIZONTAL;
+		gbc_panelListButtons.gridx = 0;
+		gbc_panelListButtons.gridy = 1;
+		panelListControl.add(panelListButtons, gbc_panelListButtons);
+
+		buttonDelete = new JButton("-");
+		buttonDelete.setEnabled(false);
+		buttonDelete.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				int index = listAlarms.getSelectedIndex();
+				alarms.remove(index);
+				listAlarms.clearSelection();
+				buttonDelete.setEnabled(false);
+			}
+		});
+		panelListButtons.add(buttonDelete);
 	}
 
 	private void addAlarm() {

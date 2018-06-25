@@ -47,6 +47,12 @@ public class AlarmList extends AbstractListModel{
 		}
 	}
 	
+	public void remove(int index) {
+		if (!this.isEmpty()) {
+			this.list.remove(index);
+		}
+	}
+	
 	public Alarm[] toArray() {
 		return list.toArray(new Alarm[0]);
 	}

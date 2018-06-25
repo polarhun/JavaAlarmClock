@@ -1,5 +1,4 @@
 ToDo in no specific order:
-- Multiple alarms (Ordered Linked list?)
 - Different and custom sounds
 - Youtube video player
 - Add customisable preferences
