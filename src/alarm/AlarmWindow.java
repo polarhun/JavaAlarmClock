@@ -12,6 +12,7 @@ import java.awt.Font;
 import javax.swing.SwingConstants;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.time.DateTimeException;
 import java.awt.event.ActionEvent;
 import javax.swing.Timer;
 import java.awt.FlowLayout;
@@ -40,6 +41,7 @@ public class AlarmWindow {
 	private JLabel lblHelp;
 	private JLabel lblActualTimeLeft;
 	private JButton btnSnooze;
+	private JButton btnStopAlarm;
 	private JButton buttonDelete;
 	private JList listAlarms;
 	private static AlarmList alarms;
@@ -199,7 +201,7 @@ public class AlarmWindow {
 		JButton btnAddAlarm = new JButton("Add Alarm");
 		panelButtons.add(btnAddAlarm);
 
-		JButton btnStopAlarm = new JButton("Stop Alarm");
+		btnStopAlarm = new JButton("Stop Alarm");
 		btnStopAlarm.setEnabled(false);
 		panelButtons.add(btnStopAlarm);
 
@@ -235,8 +237,6 @@ public class AlarmWindow {
 		btnAddAlarm.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				addAlarm();
-				lblActualTimeLeft.setText(alarms.getFirst().timeLeft());
-				btnStopAlarm.setEnabled(true);
 			}
 		});
 
@@ -307,8 +307,13 @@ public class AlarmWindow {
 			alarms.insert(newAlarm);
 			validateGUI();
 			lblActualCurrent.setText(alarms.getFirst().toString());
+			lblActualTimeLeft.setText(alarms.getFirst().timeLeft());
+			btnStopAlarm.setEnabled(true);
 		} catch (NumberFormatException e) {
 			lblHelp.setText("Not integer input");
+			invalidateGUI();
+		} catch (DateTimeException e) {
+			lblHelp.setText("Incorrect time input");
 			invalidateGUI();
 		}
 	}
