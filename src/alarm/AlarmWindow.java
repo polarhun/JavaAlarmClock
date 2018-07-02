@@ -76,9 +76,13 @@ public class AlarmWindow {
 
 		// * inputUpdate checks every second if alarm has been set, if it has it will do
 		// alarm functionality. */
-		inputUpdate = new javax.swing.Timer(1000, new ActionListener() {
+		inputUpdate = new javax.swing.Timer(500, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				updateGUI();
+			}
+
+			private void updateGUI() {
 				listAlarms.updateUI();
 				if (!alarms.isEmpty()) {
 					Alarm alarm = alarms.getFirst();
@@ -91,6 +95,10 @@ public class AlarmWindow {
 						}
 						btnSnooze.setEnabled(true);
 					}
+				}else {
+					btnStopAlarm.setEnabled(false);
+					lblActualCurrent.setText("--");
+					lblActualTimeLeft.setText("--");
 				}
 			}
 		});
@@ -223,15 +231,8 @@ public class AlarmWindow {
 			public void actionPerformed(ActionEvent arg0) {
 				beepManager.stopBeep();
 				silent = true;
-				lblActualCurrent.setText("--");
-				lblActualTimeLeft.setText("--");
 				btnSnooze.setEnabled(false);
 				alarms.removeFirst();
-				if (!alarms.isEmpty()) {
-					lblActualCurrent.setText(alarms.getFirst().toString());
-				} else {
-					btnStopAlarm.setEnabled(false);
-				}
 			}
 		});
 		btnAddAlarm.addActionListener(new ActionListener() {
@@ -258,9 +259,7 @@ public class AlarmWindow {
 		listAlarms = new JList(alarms);
 		listAlarms.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent arg0) {
-				if(alarms.getSize()>1) {
 					buttonDelete.setEnabled(true);
-				}
 			}
 		});
 		listAlarms.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
