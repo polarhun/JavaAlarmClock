@@ -22,23 +22,35 @@ public class SoundManager {
 		return instance;
 	}
 
+	public void addCustom(String path) {
+		if (!path.equals("")) {
+			dictionary.put("Custom", path);
+		}
+	}
+
 	public void playBeep(String clip) {
-		String beepPath = dictionary.get(clip);
+		String beepPath;
+		try {
+			beepPath = dictionary.get(clip);
+		} catch (NullPointerException e) {
+			beepPath = dictionary.get("Beep");
+		}
 		File beepFile = new File(beepPath);
 		try {
 			AudioInputStream audioStream = AudioSystem.getAudioInputStream(beepFile);
 			audioClip = (Clip) AudioSystem.getClip();
 			audioClip.open(audioStream);
 			audioClip.loop(Clip.LOOP_CONTINUOUSLY);
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		}{
-			
+		}
+		{
+
 		}
 	}
-	
+
 	public void stopBeep() {
-		if(audioClip != null) {
+		if (audioClip != null) {
 			audioClip.close();
 		}
 	}

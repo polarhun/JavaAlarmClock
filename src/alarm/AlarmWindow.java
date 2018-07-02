@@ -11,7 +11,10 @@ import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.SwingConstants;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
+
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.time.DateTimeException;
 import java.awt.event.ActionEvent;
 import javax.swing.Timer;
@@ -90,7 +93,7 @@ public class AlarmWindow {
 					if (!alarm.afterNow()) {
 						lblActualTimeLeft.setText("00:00");
 						if (silent) {
-							beepManager.playBeep("Beep");
+							beepManager.playBeep("Custom");
 							silent = false;
 						}
 						btnSnooze.setEnabled(true);
@@ -227,6 +230,18 @@ public class AlarmWindow {
 		});
 		btnSnooze.setEnabled(false);
 		panelButtons.add(btnSnooze);
+		
+		JButton btnSoundChoice = new JButton("Choose a Sound");
+		btnSoundChoice.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JFileChooser broswer= new JFileChooser();
+				int choice = broswer.showOpenDialog(null);
+				if (choice == JFileChooser.APPROVE_OPTION) {
+					beepManager.addCustom(broswer.getSelectedFile().getPath());
+				}
+			}
+		});
+		panelAlarmControl.add(btnSoundChoice);
 		btnStopAlarm.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				beepManager.stopBeep();
