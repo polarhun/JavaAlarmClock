@@ -50,6 +50,7 @@ public class AlarmWindow {
 	private static AlarmList alarms;
 	private static boolean silent;
 	private Timer inputUpdate;
+	private String sound;
 	private SoundManager beepManager;
 
 	/**
@@ -74,6 +75,7 @@ public class AlarmWindow {
 	public AlarmWindow() {
 		alarms = new AlarmList();
 		silent = true;
+		sound = "";
 		beepManager = SoundManager.getInstance();
 		initialize();
 
@@ -93,7 +95,7 @@ public class AlarmWindow {
 					if (!alarm.afterNow()) {
 						lblActualTimeLeft.setText("00:00");
 						if (silent) {
-							beepManager.playBeep("Custom");
+							alarm.playBeep(beepManager);
 							silent = false;
 						}
 						btnSnooze.setEnabled(true);
@@ -237,7 +239,7 @@ public class AlarmWindow {
 				JFileChooser broswer= new JFileChooser();
 				int choice = broswer.showOpenDialog(null);
 				if (choice == JFileChooser.APPROVE_OPTION) {
-					beepManager.addCustom(broswer.getSelectedFile().getPath());
+					sound= broswer.getSelectedFile().getPath();
 				}
 			}
 		});
@@ -317,7 +319,8 @@ public class AlarmWindow {
 		try {
 			hour = Integer.parseInt(txtHour.getText());
 			minute = Integer.parseInt(txtMinute.getText());
-			Alarm newAlarm = new Alarm(hour, minute);
+			Alarm newAlarm = new Alarm(hour, minute, sound);
+			sound = "";
 			alarms.insert(newAlarm);
 			validateGUI();
 			lblActualCurrent.setText(alarms.getFirst().toString());

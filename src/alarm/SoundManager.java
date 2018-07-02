@@ -7,12 +7,11 @@ import javax.sound.sampled.*;
 
 public class SoundManager {
 	private static SoundManager instance;
-	private HashMap<String, String> dictionary;
 	private Clip audioClip;
+	private String defaultPath;
 
 	private SoundManager() {
-		dictionary = new HashMap<>();
-		dictionary.put("Beep", "src\\res\\beep.wav");
+		this.defaultPath = "src\\res\\beep.wav";
 	}
 
 	public static SoundManager getInstance() {
@@ -22,20 +21,15 @@ public class SoundManager {
 		return instance;
 	}
 
-	public void addCustom(String path) {
+	public void playBeep(String path) {
+		String beepPath = path;
+		File beepFile;
 		if (!path.equals("")) {
-			dictionary.put("Custom", path);
+			beepFile = new File(beepPath);
+		} else {
+			beepFile = new File(defaultPath);
 		}
-	}
 
-	public void playBeep(String clip) {
-		String beepPath;
-		try {
-			beepPath = dictionary.get(clip);
-		} catch (NullPointerException e) {
-			beepPath = dictionary.get("Beep");
-		}
-		File beepFile = new File(beepPath);
 		try {
 			AudioInputStream audioStream = AudioSystem.getAudioInputStream(beepFile);
 			audioClip = (Clip) AudioSystem.getClip();

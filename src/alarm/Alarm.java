@@ -8,9 +8,11 @@ import java.time.temporal.ChronoUnit;
 public class Alarm {
 	private LocalDateTime alarmDateTime;
 	private boolean snoozed;
+	private String beep;
 
-	public Alarm(int hour, int minutes) {
+	public Alarm(int hour, int minutes, String beep) {
 		super();
+		this.beep = beep;
 		this.snoozed = false;
 		LocalTime alarmTime = LocalTime.of(hour, minutes);
 		LocalDate alarmDate;
@@ -21,6 +23,12 @@ public class Alarm {
 		}
 		this.alarmDateTime = LocalDateTime.of(alarmDate, alarmTime);
 	}
+	
+	
+	public void playBeep(SoundManager beepManager) {
+		beepManager.playBeep(this.beep);
+	}
+
 
 	public LocalDateTime getAlarmTime() {
 		return alarmDateTime;
